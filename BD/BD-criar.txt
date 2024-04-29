@@ -1,0 +1,99 @@
+Linha de comando:
+
+mysql> 
+CREATE DATABASE cvedb DEFAULT CHARACTER SET utf8;
+CREATE USER 'cvedb_user'@'%' IDENTIFIED WITH mysql_native_password BY 'change_password';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, DROP, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON cvedb.* TO 'cvedb_user'@'%';
+FLUSH PRIVILEGES;
+SET @@global.sql_mode= '';
+
+
+
+DBeaver
+CREATE TABLE cvedb.nist (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100),
+	Published varchar(100),
+	Severity varchar(100)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
+
+CREATE TABLE cvedb.redhat (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100) NOT NULL,
+	Version varchar(100) NOT NULL,
+	Published varchar(100) NOT NULL,
+	Published_NIST varchar(100),
+	Resolved varchar(100),
+	FixState varchar(100),
+	Severity varchar(100) NOT NULL,
+	Severity_NIST varchar(100)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
+
+CREATE TABLE cvedb.almalinux (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	idalma varchar(100) NOT NULL,
+	CVE varchar(100),
+	Version varchar(100) NOT NULL,
+	Published varchar(100) NOT NULL,
+	Published_NIST varchar(100),
+	Resolved varchar(100),
+	Severity varchar(100) NOT NULL,
+	Severity_NIST varchar(100) NOT NULL
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
+
+CREATE TABLE cvedb.rockylinux (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	idrocky varchar(100) NOT NULL,
+	CVE varchar(100),
+	Version varchar(100) NOT NULL,
+	Published varchar(100) NOT NULL,
+	Published_NIST varchar(100),
+	Resolved varchar(100),
+	Severity varchar(100) NOT NULL,
+	Severity_NIST varchar(100)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
+
+CREATE TABLE cvedb.ubuntu (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100) NOT NULL,
+	Published varchar(100) NOT NULL,
+	Published_NIST varchar(100),
+	Priority varchar(100) NOT NULL,
+	Severity_NIST varchar(100) NOT NULL,
+	Package varchar(100) NOT NULL,
+	Distro varchar(100) NOT NULL,
+	Support varchar(100) NOT NULL,
+	Status varchar(100) NOT NULL,
+	Resolved varchar(100)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
+
+CREATE TABLE cvedb.debian (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100) NOT NULL,
+	Published_NIST varchar(100),
+	Severity_NIST varchar(100) NOT NULL,
+	Priority varchar(100) NOT NULL,
+	Package varchar(100) NOT NULL,
+	Distro varchar(100) NOT NULL,
+	Status varchar(100) NOT NULL,
+	Version_Resolved varchar(100),
+	Resolved varchar(100)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
