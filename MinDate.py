@@ -10,7 +10,7 @@ cursor = mydb.cursor()
 cve_distro = ["almalinux", "debian", "redhat", "rockylinux", "ubuntu"]
 
 for distro in cve_distro:
-    cursor.execute(f"SELECT cve from cvedb5.{distro}")
+    cursor.execute(f"SELECT cve from cvedb.{distro}")
     records = cursor.fetchall()
     for cve in records:
         if cve[0] is None:
@@ -26,11 +26,11 @@ for distro in cve_distro:
             records1 = cursor.fetchall()
             if records1 == []:
                 # Select CVE from all Linux
-                select_alma = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb5.almalinux a WHERE (CVE = '{temp}')"
-                select_debian = f"SELECT coalesce(least(Published_NIST, Resolved), Published_NIST, Resolved) from cvedb5.debian d WHERE (CVE = '{temp}')"
-                select_redhat = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb5.redhat a WHERE (CVE = '{temp}')"
-                select_rocky = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb5.rockylinux a WHERE (CVE = '{temp}')"
-                select_ubuntu = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb5.ubuntu a WHERE (CVE = '{temp}')"
+                select_alma = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.almalinux a WHERE (CVE = '{temp}')"
+                select_debian = f"SELECT coalesce(least(Published_NIST, Resolved), Published_NIST, Resolved) from cvedb.debian d WHERE (CVE = '{temp}')"
+                select_redhat = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.redhat a WHERE (CVE = '{temp}')"
+                select_rocky = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.rockylinux a WHERE (CVE = '{temp}')"
+                select_ubuntu = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.ubuntu a WHERE (CVE = '{temp}')"
                 # Put all dates in a list
                 listcve = [select_alma, select_debian, select_redhat, select_rocky, select_ubuntu]
                 mindate = []
@@ -38,7 +38,7 @@ for distro in cve_distro:
                     cursor.execute(x)
                     records = cursor.fetchall()
                     for z in records:
-                        if z[0] is None or z[0] == []:
+                        if z[0] is None or z[0] == [] or z[0] == '':
                             tt = 0
                         else:
                             mindate.append(z[0])
