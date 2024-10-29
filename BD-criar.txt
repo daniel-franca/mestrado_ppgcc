@@ -101,7 +101,7 @@ COLLATE=UTF8MB4_general_ci;
 CREATE TABLE cvedb.cvemindate (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100) NOT NULL,
-	MinDate varchar(100)
+	MinDate date NOT NULL
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
