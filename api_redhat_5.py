@@ -57,14 +57,16 @@ for cve in data:
         pathlib.Path('temp.json').write_bytes(json_url.content)
         # Open temporary file
         filetemp = open('temp.json', encoding="UTF8")
-        # Load JSON´s information and temporary lists
+        # Load JSON  s information and temporary lists
         json_load = json.load(filetemp)
         # Loop for write each resolved CVE on CVS file
         # Searching for Red Hat Enterprise Linux x Version
-        try:
-            for information in json_load["affected_release"]:
-                if "Red Hat Enterprise Linux" in information["product_name"]:
-                    product_name = information["product_name"]
+        for information in json_load["package_state"]:
+            if "Red Hat Enterprise Linux" in information["product_name"]:
+                product_name = str(information["product_name"])
+                fix_state = str(information["fix_state"])
+                fix_state = fix_state.lower()
+                if fix_state == "resolved":
                     release_date = str(pd.to_datetime(information["release_date"]).date())
                     # Verify if NIST has the CVE and catch date and severity
                     select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
@@ -74,30 +76,21 @@ for cve in data:
                         nist_date = x[1]
                         nist_severity = x[2]
                         # Write to DataBase
-                        sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                        values = (idcve, product_name, date, nist_date, release_date, severity, nist_severity)
+                        sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, >                        values = (idcve, product_name, date, nist_date, release_date, severity, nist_severity)
                         cursor.execute(sql, values)
                         mydb.commit()
-        except KeyError:
-            pass
-        # Loop for write each CVE status on CVS file
-        # Searching for Red Hat Enterprise Linux x Version
-        for information in json_load["package_state"]:
-            if "Red Hat Enterprise Linux" in information["product_name"]:
-                product_name = information["product_name"]
-                fix_state = information["fix_state"]
-                # Verify if NIST has the CVE and catch date and severity
-                select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
-                cursor.execute(select)
-                records = cursor.fetchall()
-                for x in records:
-                    nist_date = x[1]
-                    nist_severity = x[2]
-                    # Write to DataBase
-                    sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, FixState, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-                    values = (idcve, product_name, date, nist_date, fix_state, severity, nist_severity)
-                    cursor.execute(sql, values)
-                    mydb.commit()
+                else:
+                    # Verify if NIST has the CVE and catch date and severity
+                    select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
+                    cursor.execute(select)
+                    records = cursor.fetchall()
+                    for x in records:
+                        nist_date = x[1]
+                        nist_severity = x[2]
+                        # Write to DataBase
+                        sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, FixState, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, >                        values = (idcve, product_name, date, nist_date, fix_state, severity, nist_severity)
+                        cursor.execute(sql, values)
+                        mydb.commit()
     except KeyError:
         pass
 
