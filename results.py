@@ -77,7 +77,7 @@ def main(distro, version, sql):
             mydb.commit()
 
 # Define Linux Distribution
-distro = ["rockylinux", "almalinux", "ubuntu", "redhat", "debian"]
+distro = ["rockylinux", "almalinux", "ubuntu", "ubuntupro", "redhat", "debian"]
 
 # Specific parameters
 for a in distro:
@@ -99,17 +99,23 @@ for a in distro:
                     sql = f"SELECT CVE, Resolved, Published_NIST, Status FROM {a} where Distro IN ('{b}')"
                     main(a, b, sql)
             else:
-                if a == "almalinux":
-                    version = ["8", "9"]
+                if a == "ubuntupro":
+                    version = ["xenial", "bionic", "focal", "jammy"]
                     for b in version:
-                        sql = f"SELECT CVE, Resolved, Published_NIST, Severity FROM {a} where Version IN ('AlmaLinux {b}')"
+                        sql = f"SELECT CVE, Resolved, Published_NIST, Status FROM {a} where Distro IN ('{b}')"
                         main(a, b, sql)
                 else:
-                    if a == "rockylinux":
+                    if a == "almalinux":
                         version = ["8", "9"]
                         for b in version:
-                            sql = f"SELECT CVE, Resolved, Published_NIST, Severity FROM {a} where Version IN ('Rocky Linux {b}')"
+                            sql = f"SELECT CVE, Resolved, Published_NIST, Severity FROM {a} where Version IN ('AlmaLinux {b}')"
                             main(a, b, sql)
+                    else:
+                        if a == "rockylinux":
+                            version = ["8", "9"]
+                            for b in version:
+                                sql = f"SELECT CVE, Resolved, Published_NIST, Severity FROM {a} where Version IN ('Rocky Linux {b}')"
+                                main(a, b, sql)
 
 print("Finished")
 
