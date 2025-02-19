@@ -106,3 +106,20 @@ CREATE TABLE cvedb.cvemindate (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
+
+CREATE TABLE cvedb.ubuntupro (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100) NOT NULL,
+	Published varchar(100) NOT NULL,
+	Published_NIST varchar(100),
+	Priority varchar(100) NOT NULL,
+	Severity_NIST varchar(100) NOT NULL,
+	Package varchar(100) NOT NULL,
+	Distro varchar(100) NOT NULL,
+	Support varchar(100) NOT NULL,
+	Status varchar(100) NOT NULL,
+	Resolved varchar(100)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
