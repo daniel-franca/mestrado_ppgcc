@@ -7,7 +7,7 @@ mydb = mysql.connector.connect(charset="utf8", user='user', password='password',
 cursor = mydb.cursor()
 
 # List to for
-cve_distro = ["almalinux", "debian", "redhat", "rockylinux", "ubuntu"]
+cve_distro = ["almalinux", "debian", "redhat", "rockylinux", "ubuntu", "ubuntupro"]
 
 for distro in cve_distro:
     cursor.execute(f"SELECT cve from cvedb.{distro}")
@@ -31,8 +31,9 @@ for distro in cve_distro:
                 select_redhat = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.redhat a WHERE (CVE = '{temp}')"
                 select_rocky = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.rockylinux a WHERE (CVE = '{temp}')"
                 select_ubuntu = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.ubuntu a WHERE (CVE = '{temp}')"
+                select_ubuntupro = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.ubuntupro a WHERE (CVE = '{temp}')"
                 # Put all dates in a list
-                listcve = [select_alma, select_debian, select_redhat, select_rocky, select_ubuntu]
+                listcve = [select_alma, select_debian, select_redhat, select_rocky, select_ubuntu, select_ubuntupro]
                 mindate = []
                 for x in listcve:
                     cursor.execute(x)
