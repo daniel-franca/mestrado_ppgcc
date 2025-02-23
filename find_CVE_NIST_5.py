@@ -17,7 +17,7 @@ And change key variable
 
 # Starting
 print(f'"Welcome to collector of CVEs from NIST/NVD´s Database."')
-year = ["2018", "2019", "2020", "2021", "2022", "2023"]
+year = ["2019", "2020", "2021", "2022", "2023"]
 key = "xxx-xxx-xxx"
 
 # Loop search for 5 years
