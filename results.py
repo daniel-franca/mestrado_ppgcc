@@ -108,13 +108,13 @@ for a in distro:
                     if a == "almalinux":
                         version = ["8", "9"]
                         for b in version:
-                            sql = f"SELECT CVE, Resolved, Published_NIST, Severity FROM {a} where Version IN ('AlmaLinux {b}')"
+                            sql = f"SELECT CVE, Resolved, Published_NIST, FixState FROM {a} where Version IN ('AlmaLinux {b}')"
                             main(a, b, sql)
                     else:
                         if a == "rockylinux":
                             version = ["8", "9"]
                             for b in version:
-                                sql = f"SELECT CVE, Resolved, Published_NIST, Severity FROM {a} where Version IN ('Rocky Linux {b}')"
+                                sql = f"SELECT CVE, Resolved, Published_NIST, FixState FROM {a} where Version IN ('Rocky Linux {b}')"
                                 main(a, b, sql)
 
 print("Finished")
