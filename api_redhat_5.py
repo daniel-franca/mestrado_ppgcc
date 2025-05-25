@@ -42,7 +42,7 @@ def get_data(query):
 
 # Get a list all issues from 2023
 endpoint = '/cve.json'
-params = str("after=2017-12-31&per_page=100000000")
+params = str("after=2017-12-31&before=2024-01-01&per_page=100000000")
 data = get_data(endpoint + '?' + params)
 
 for cve in data:
@@ -50,48 +50,57 @@ for cve in data:
     severity = str(cve['severity'])
     date = str(pd.to_datetime(cve['public_date']).date())
     url = str(cve['resource_url'])
-    try:
-        # Looking for Corrections Status
-        # Save Temporary File
-        json_url = requests.get(url)
-        pathlib.Path('temp.json').write_bytes(json_url.content)
-        # Open temporary file
-        filetemp = open('temp.json', encoding="UTF8")
-        # Load JSON  s information and temporary lists
-        json_load = json.load(filetemp)
-        # Loop for write each resolved CVE on CVS file
-        # Searching for Red Hat Enterprise Linux x Version
-        for information in json_load["package_state"]:
+    # Looking for Corrections Status
+    # Save Temporary File
+    json_url = requests.get(url)
+    pathlib.Path('temp.json').write_bytes(json_url.content)
+    # Open temporary file
+    filetemp = open('temp.json', encoding="UTF8")
+    # Load JSONs information and temporary lists
+    json_load = json.load(filetemp)
+    # Loop for write each resolved CVE on CVS file
+    # Searching for Red Hat Enterprise Linux x Version
+    for information in json_load["package_state"]:
+        if information is not None:
             if "Red Hat Enterprise Linux" in information["product_name"]:
                 product_name = str(information["product_name"])
                 fix_state = str(information["fix_state"])
                 fix_state = fix_state.lower()
-                if fix_state == "resolved":
-                    release_date = str(pd.to_datetime(information["release_date"]).date())
-                    # Verify if NIST has the CVE and catch date and severity
-                    select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
-                    cursor.execute(select)
-                    records = cursor.fetchall()
-                    for x in records:
-                        nist_date = x[1]
-                        nist_severity = x[2]
-                        # Write to DataBase
-                        sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, >                        values = (idcve, product_name, date, nist_date, release_date, severity, nist_severity)
-                        cursor.execute(sql, values)
-                        mydb.commit()
-                else:
-                    # Verify if NIST has the CVE and catch date and severity
-                    select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
-                    cursor.execute(select)
-                    records = cursor.fetchall()
-                    for x in records:
-                        nist_date = x[1]
-                        nist_severity = x[2]
-                        # Write to DataBase
-                        sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, FixState, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, >                        values = (idcve, product_name, date, nist_date, fix_state, severity, nist_severity)
-                        cursor.execute(sql, values)
-                        mydb.commit()
-    except KeyError:
+                package = str(information["package_name"])
+                package = package.lower()
+                # Verify if NIST has the CVE and catch date and severity
+                select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
+                cursor.execute(select)
+                records = cursor.fetchall()
+                for x in records:
+                    nist_date = x[1]
+                    nist_severity = x[2]
+                    # Write to DataBase
+                    sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, FixState, Severity, Severity_NIST, Package) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                    values = (idcve, product_name, date, nist_date, fix_state, severity, nist_severity, package)
+                    cursor.execute(sql, values)
+                    mydb.commit()
+    try:
+        for information in json_load["affected_release"]:
+            if "Red Hat Enterprise Linux" in information["product_name"]:
+                product_name = str(information["product_name"])
+                fix_state = "resolved"
+                package = str(information["package"])
+                package = package.lower()
+                release_date = str(pd.to_datetime(information["release_date"]).date())
+                # Verify if NIST has the CVE and catch date and severity
+                select = f"SELECT CVE, Published, Severity from nist WHERE CVE LIKE '{idcve}'"
+                cursor.execute(select)
+                records = cursor.fetchall()
+                for x in records:
+                    nist_date = x[1]
+                    nist_severity = x[2]
+                    # Write to DataBase
+                    sql = "INSERT INTO redhat (CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST, Package) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                    values = (idcve, product_name, date, nist_date, release_date, severity, nist_severity, package)
+                    cursor.execute(sql, values)
+                    mydb.commit()
+    except:
         pass
 
 print("Finished")
