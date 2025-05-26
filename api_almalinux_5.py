@@ -60,8 +60,8 @@ for information in json_load['data']:
                 nist_date = x[1]
                 nist_severity = x[2]
                 # Write to DB
-                sql = "INSERT INTO almalinux (idalma, CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                values = (idalma, cve, version, date, nist_date, date_resolved, severity, nist_severity)
+                sql = "INSERT INTO almalinux (idalma, CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST, Package) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                values = (idalma, cve, version, date, nist_date, date_resolved, severity, nist_severity, package)
                 cursor.execute(sql, values)
                 mydb.commit()
             n += 1
@@ -111,8 +111,8 @@ for information in json_load['data']:
                 nist_date = x[1]
                 nist_severity = x[2]
                 # Write to DB
-                sql = "INSERT INTO almalinux (idalma, CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                values = (idalma, cve, version, date, nist_date, date_resolved, severity, nist_severity)
+                sql = "INSERT INTO almalinux (idalma, CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST, Package) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                values = (idalma, cve, version, date, nist_date, date_resolved, severity, nist_severity, package)
                 cursor.execute(sql, values)
                 mydb.commit()
             n += 1
@@ -123,3 +123,4 @@ print("Finished")
 # Make sure DB´s connection is closed
 cursor.close()
 mydb.close()
+
