@@ -33,13 +33,14 @@ while pagenumber < 300:
             # Iterate all versions and collect data
             for a in range(len(information['affectedProducts'])):
                 idrocky = str(information['name'])
-                version = str(information['affectedProducts'])
+                version = str(information['affectedProducts'][a])
                 version = str((version.replace("['", "")))
                 version = str((version.replace("']", "")))
                 publishedAt = str(information['publishedAt'])
                 date_resolved = str(pd.to_datetime(publishedAt).date())
                 severity = str(information['severity'])
                 severity = str((severity.replace("SEVERITY_", "")))
+                package = str(information['rpms'][f'{version}']['nvras'][0])
                 # Iterate all CVEs
                 for b in range(len(information['cves'])):
                     cve = str(information['cves'][b]['name'])
@@ -62,8 +63,8 @@ while pagenumber < 300:
                         nist_date = x[1]
                         nist_severity = x[2]
                         # Write to DB
-                        sql = "INSERT INTO rockylinux (idrocky, CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-                        values = (idrocky, cve, version, date, nist_date, date_resolved, severity, nist_severity)
+                        sql = "INSERT INTO rockylinux (idrocky, CVE, Version, Published, Published_NIST, Resolved, Severity, Severity_NIST, Package) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        values = (idrocky, cve, version, date, nist_date, date_resolved, severity, nist_severity, package)
                         cursor.execute(sql, values)
                         mydb.commit()
     # Next Page - URL
@@ -75,3 +76,4 @@ print("Finished")
 # Make sure DB´s connection is closed
 cursor.close()
 mydb.close()
+
