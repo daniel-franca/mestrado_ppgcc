@@ -3,14 +3,20 @@
 import mysql.connector
 
 # MySQL Connection
-mydb = mysql.connector.connect(charset="utf8", user='user', password='password', database='cvedb', host='127.0.0.1')
+mydb = mysql.connector.connect(
+    charset="utf8",
+    user='user',
+    password='password',
+    database='cvedb',
+    host='127.0.0.1'
+)
 cursor = mydb.cursor()
 
 # List to for
 cve_distro = ["almalinux", "debian", "redhat", "rockylinux", "ubuntu", "ubuntupro"]
 
 for distro in cve_distro:
-    cursor.execute(f"SELECT cve from cvedb.{distro}")
+    cursor.execute(f"SELECT cve from cvedb5.{distro}")
     records = cursor.fetchall()
     for cve in records:
         if cve[0] is None:
@@ -26,12 +32,12 @@ for distro in cve_distro:
             records1 = cursor.fetchall()
             if records1 == []:
                 # Select CVE from all Linux
-                select_alma = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.almalinux a WHERE (CVE = '{temp}')"
-                select_debian = f"SELECT coalesce(least(Published_NIST, Resolved), Published_NIST, Resolved) from cvedb.debian d WHERE (CVE = '{temp}')"
-                select_redhat = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.redhat a WHERE (CVE = '{temp}')"
-                select_rocky = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.rockylinux a WHERE (CVE = '{temp}')"
-                select_ubuntu = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.ubuntu a WHERE (CVE = '{temp}')"
-                select_ubuntupro = f"SELECT coalesce(least(Published, Published_NIST, Resolved), Published, Published_NIST, Resolved) from cvedb.ubuntupro a WHERE (CVE = '{temp}')"
+                select_alma = f"SELECT least(Published, Published_NIST) from cvedb5.almalinux a WHERE (CVE = '{temp}')"
+                select_debian = f"SELECT Published_NIST from cvedb5.debian d WHERE (CVE = '{temp}')"
+                select_redhat = f"SELECT least(Published, Published_NIST) from cvedb5.redhat a WHERE (CVE = '{temp}')"
+                select_rocky = f"SELECT least(Published, Published_NIST) from cvedb5.rockylinux a WHERE (CVE = '{temp}')"
+                select_ubuntu = f"SELECT least(Published, Published_NIST) from cvedb5.ubuntu a WHERE (CVE = '{temp}')"
+                select_ubuntupro = f"SELECT least(Published, Published_NIST) from cvedb5.ubuntu_PRO a WHERE (CVE = '{temp}')"
                 # Put all dates in a list
                 listcve = [select_alma, select_debian, select_redhat, select_rocky, select_ubuntu, select_ubuntupro]
                 mindate = []
