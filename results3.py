@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import sys
-from datetime import datetime
 
 # 2. Configurações de estilo para os gráficos
 plt.style.use('seaborn-v0_8-whitegrid')
@@ -40,12 +39,15 @@ except Exception as err:
 # --- Funções para Gráficos Anuais ---
 
 def fetch_precalculated_data(table_name: str, db_engine) -> pd.DataFrame:
-    query = f"SELECT Distro, Year, Days FROM {table_name} WHERE Days >= 0;"
-    print(f"Buscando dados anuais da tabela '{table_name}'...")
+    # --- ALTERAÇÃO APLICADA AQUI: Filtro de ano fixo ---
+    query = f"SELECT Distro, Year, Days FROM {table_name} WHERE Days >= 0 AND Year BETWEEN 2019 AND 2023;"
+    
+    print(f"Buscando dados anuais (2019-2023) da tabela '{table_name}'...")
     try:
         df = pd.read_sql(query, db_engine)
     except Exception as e: return pd.DataFrame()
     if df.empty: return df
+    
     name_map = {'debian': 'Debian', 'ubuntu': 'Ubuntu', 'ubuntupro': 'Ubuntu Pro', 'redhat': 'Red Hat', 'almalinux': 'AlmaLinux', 'rockylinux': 'Rocky Linux'}
     df['Distro'] = df['Distro'].apply(lambda x: name_map.get(x, x))
     df['Year'] = pd.Categorical(df['Year'], categories=sorted(df['Year'].unique()), ordered=True)
@@ -61,14 +63,9 @@ def generate_final_boxplot(data: pd.DataFrame, title: str, filename: str):
     plt.title(title)
     ax.set_ylabel("Média de Tempo de Resolução (Dias)")
     ax.set_xlabel('')
-    
-    # Define uma escala fixa para o eixo Y de 0 a 2400 para comparação direta.
     ax.set_ylim(0, 2400)
-    # Ajusta os marcadores da grade para a nova escala fixa.
-    ax.set_yticks(np.arange(0, 2401, 200)) # Marcadores de 0 a 2400, a cada 200.
-    
+    ax.set_yticks(np.arange(0, 2401, 200))
     ax.yaxis.grid(True, linestyle='--', which='major', color='grey', alpha=.7)
-    
     medians = data.groupby(['Year', 'Distro'], observed=True)['Days'].median().to_dict()
     distro_labels = [text.get_text() for text in ax.get_legend().get_texts()]
     year_labels = [tick.get_text() for tick in ax.get_xticklabels()]
@@ -77,7 +74,7 @@ def generate_final_boxplot(data: pd.DataFrame, title: str, filename: str):
         for j, distro in enumerate(distro_labels):
             key = (int(year), distro)
             median_val = medians.get(key)
-            if median_val is not None and median_val <= 2400: # So adiciona o texto se ele estiver dentro da escala visivel
+            if median_val is not None and median_val <= 2400:
                 group_width = 0.8; box_width = group_width / num_distros
                 offset = (j - (num_distros - 1) / 2.) * box_width
                 x_pos = i + offset
@@ -90,15 +87,17 @@ def generate_final_boxplot(data: pd.DataFrame, title: str, filename: str):
 # --- Funções para Gráficos por Versão Agregada e Ano a Ano ---
 
 def fetch_data_for_version_analysis(table_name: str, db_engine) -> pd.DataFrame:
-    start_year = datetime.now().year - 5
-    query = f"SELECT Distro, Version, Year, Days FROM {table_name} WHERE Days >= 0 AND Year >= {start_year};"
-    print(f"Buscando dados por versão da tabela '{table_name}'...")
+    # --- ALTERAÇÃO APLICADA AQUI: Filtro de ano fixo ---
+    query = f"SELECT Distro, Version, Year, Days FROM {table_name} WHERE Days >= 0 AND Year BETWEEN 2019 AND 2023;"
+    
+    print(f"Buscando dados por versão (2019-2023) da tabela '{table_name}'...")
     try:
         df = pd.read_sql(query, db_engine)
     except Exception as e:
         print(f"ERRO: Não foi possível ler a tabela '{table_name}' ou a coluna 'Version' não existe. Detalhe: {e}")
         return pd.DataFrame()
     if df.empty: return df
+    
     name_map = {'debian': 'Debian', 'ubuntu': 'Ubuntu', 'ubuntupro': 'Ubuntu Pro', 'redhat': 'Red Hat', 'almalinux': 'AlmaLinux', 'rockylinux': 'Rocky Linux'}
     df['Distro_Fmt'] = df['Distro'].apply(lambda x: name_map.get(x, x))
     df['Distro-Version'] = df['Distro_Fmt'] + '-' + df['Version'].astype(str)
@@ -132,19 +131,32 @@ def generate_version_boxplot(data: pd.DataFrame, title: str, filename: str):
 def generate_version_yearly_subplots(data: pd.DataFrame, title: str, filename: str):
     if data.empty: return
     print(f"Gerando gráfico por versão (ano a ano): {title}")
+
     data['Year'] = pd.Categorical(data['Year'], categories=sorted(data['Year'].unique()), ordered=True)
+    
     g = sns.FacetGrid(data, col="Distro_Fmt", col_wrap=3, height=6, aspect=1.2, sharey=True, sharex=False)
     g.map_dataframe(sns.boxplot, x="Version", y="Days", hue="Year", showfliers=False, palette="viridis")
+    
     g.set(ylim=(0, 2600))
     g.set_titles("Distribuição: {col_name}", size=14)
     g.set_axis_labels("Versão", "Média de Tempo de Resolução (Dias)")
+    
     for ax in g.axes.flat:
         ax.yaxis.grid(True, linestyle='--', which='major', color='grey', alpha=.7)
         if ax.get_xticklabels():
              plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
-    g.add_legend(title="Ano")
-    plt.suptitle(title, y=1.02, size=18)
-    g.tight_layout()
+
+    handles = g._legend_data.values()
+    labels = g._legend_data.keys()
+    
+    if g.legend:
+        g.legend.remove()
+        
+    g.fig.legend(handles, labels, loc='upper center', ncol=len(labels), title='Ano', fontsize=12, bbox_to_anchor=(0.5, 0.98))
+    
+    plt.suptitle(title, y=1.05, size=18)
+    plt.tight_layout(rect=[0, 0, 1, 0.94])
+    
     plt.savefig(filename, dpi=300)
     print(f"Gráfico salvo com sucesso como '{filename}'")
     plt.show()
@@ -159,7 +171,7 @@ def main():
     geral_table_name = 'results'
     comum_table_name = 'pacotescomum'
     
-    print("\n" + "#"*25 + " INICIANDO GRÁFICOS ANUAIS " + "#"*26)
+    print("\n" + "#"*25 + " INICIANDO GRÁFICOS ANUAIS (2019-2023) " + "#"*25)
     if check_table_exists(geral_table_name):
         geral_data_anual = fetch_precalculated_data(geral_table_name, engine)
         generate_final_boxplot(geral_data_anual, "Tempo de Resolução por Ano (Geral)", "1_boxplot_anual_geral.png")
@@ -167,7 +179,7 @@ def main():
         comum_data_anual = fetch_precalculated_data(comum_table_name, engine)
         generate_final_boxplot(comum_data_anual, "Tempo de Resolução por Ano (Pacotes Comuns)", "2_boxplot_anual_pacotes_comuns.png")
 
-    print("\n" + "#"*20 + " INICIANDO GRÁFICOS POR VERSÃO DA DISTRIBUIÇÃO " + "#"*20)
+    print("\n" + "#"*18 + " INICIANDO GRÁFICOS POR VERSÃO (2019-2023) " + "#"*19)
     if check_table_exists(geral_table_name):
         geral_data_v = fetch_data_for_version_analysis(geral_table_name, engine)
         generate_version_boxplot(geral_data_v, "Tempo de Resolução por Versão - Agregado (Geral)", "3_boxplot_versao_agregado_geral.png")
@@ -184,4 +196,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
