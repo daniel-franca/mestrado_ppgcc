@@ -3,85 +3,140 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 
 # --- Configurações do Banco de Dados ---
-# Verifique se a senha está correta.
 db_user = 'cvedb_user'
 db_password = 'password'
 db_host = '127.0.0.1'
 db_name = 'cvedb5'
 
-# Busca CVEs para analise de criticidade
+def analyze_pro_only_difference(connection):
 
-def analyze_cves_for_summary(connection, source_table_name):
     try:
-        # Passo 1: Obter a lista de CVEs únicas que correspondem ao critério,
-        # usando a tabela de origem especificada (results ou pacotescomum).
-        print(f"\nIdentificando CVEs únicas para análise a partir da tabela '{source_table_name}'...")
-        cves_query = f"""
-            SELECT DISTINCT CVE FROM ubuntu
-            WHERE Resolved = 'CHECK MANUALLY'
-            AND CVE IN (SELECT DISTINCT CVE FROM {source_table_name});
-        """
-        df_cves = pd.read_sql_query(cves_query, connection)
+        print("Analisando a tabela 'results' para encontrar diferenças...")
+
+        query_pro = "SELECT CVE, Version, Year FROM results WHERE Distro = 'ubuntupro'"
+        df_pro = pd.read_sql_query(query_pro, connection)
+
+        query_std = "SELECT CVE, Version, Year FROM results WHERE Distro = 'ubuntu'"
+        df_std = pd.read_sql_query(query_std, connection)
+
+        pro_set = set(map(tuple, df_pro.to_numpy()))
+        std_set = set(map(tuple, df_std.to_numpy()))
+
+        difference_set = pro_set - std_set
         
-        if df_cves.empty:
+        if not difference_set:
             return pd.DataFrame()
 
-        cve_list = df_cves['CVE'].tolist()
-        print(f"Encontradas {len(cve_list)} CVEs únicas para este cenário.")
+        print(f"Diferença encontrada: {len(difference_set)} ocorrências (CVE+Version+Year) corrigidas apenas no Pro.")
+        
+        df_difference = pd.DataFrame(difference_set, columns=['CVE', 'Version', 'publication_year'])
 
-        # Passo 2: Para essa lista de CVEs, buscar todas as suas prioridades na tabela ubuntupro.
-        cve_tuple = tuple(cve_list)
-        if not cve_tuple:
+        cve_version_pairs = list(df_difference[['CVE', 'Version']].itertuples(index=False, name=None))
+        
+        if not cve_version_pairs:
             return pd.DataFrame()
 
-        priorities_query = f"""
-            SELECT CVE, Priority FROM ubuntupro
-            WHERE CVE IN {cve_tuple}
+        print("Buscando a criticidade na tabela 'ubuntu' para os resultados...")
+        
+        values_str = ", ".join(map(str, cve_version_pairs))
+        
+        priority_query = f"""
+            SELECT CVE, Distro, Priority FROM ubuntu
+            WHERE (CVE, Distro) IN ({values_str})
         """
-        df_all_priorities = pd.read_sql_query(priorities_query, connection)
+        df_priorities = pd.read_sql_query(priority_query, connection)
         
-        # Passo 3: Determinar criticidade
-        priority_order = pd.CategoricalDtype(
-            ['critical', 'high', 'medium', 'low', 'negligible', 'unknown'], 
-            ordered=True
-        )
-        df_all_priorities['Priority'] = df_all_priorities['Priority'].astype(priority_order)
+        df_priorities.rename(columns={'Distro': 'Version'}, inplace=True)
+        df_final = pd.merge(df_difference, df_priorities, on=['CVE', 'Version'])
         
-        df_highest_priorities = df_all_priorities.loc[df_all_priorities.groupby('CVE')['Priority'].idxmax()]
-        
-        return df_highest_priorities
+        return df_final
 
     except Exception as err:
-        print(f"ERRO ao executar a análise para a tabela '{source_table_name}': {err}")
+        print(f"ERRO ao executar a análise: {err}")
         return None
 
-def print_summary(df, scenario_title):
-    print("\n" + "="*80)
-    print(scenario_title)
-    print("="*80)
+def print_detailed_summary(df, scenario_name):
+    """
+    Recebe o DataFrame final e imprime o sumário agrupado por ano e por versão.
+    """
+    print("\n" + "#"*80)
+    print(f"# {scenario_name}")
+    print("#"*80)
     
     if df is not None and not df.empty:
-        total_count = len(df)
-        print(f"\nTotal de CVEs ÚNICAS encontradas: {total_count}\n")
-        
-        priority_counts = df['Priority'].value_counts().reset_index()
-        priority_counts.columns = ['Criticidade (Priority)', 'Quantidade']
-        
-        priority_counts['Percentual'] = (priority_counts['Quantidade'] / total_count) * 100
-        priority_counts['Percentual'] = priority_counts['Percentual'].map('{:.2f}%'.format)
-        
-        print(priority_counts.to_string(index=False))
+        total_occurrences = len(df)
+        print(f"\nTotal GERAL de ocorrências (CVE+Version+Year) corrigidas apenas no Pro: {total_occurrences}")
 
+        grouped_by_year = df.groupby('publication_year')
+        
+        for year, year_group in sorted(grouped_by_year):
+            print(f"\n\n{'='*60}")
+            print(f"Ano: {year}")
+            print(f"{'='*60}")
+            
+            grouped_by_version = year_group.groupby('Version')
+            
+            for version, version_group in sorted(grouped_by_version):
+                total_for_version = len(version_group)
+                
+                print(f"\n--- Versão do Ubuntu: {version} ---")
+                print(f"Total de ocorrências nesta versão: {total_for_version}\n")
+                
+                priority_counts = version_group['Priority'].value_counts().reset_index()
+                priority_counts.columns = ['Criticidade (Priority)', 'Quantidade']
+                
+                print(priority_counts.to_string(index=False))
+                print("-" * 40)
     elif df is not None:
-        print("\nNenhuma vulnerabilidade encontrada que corresponda aos critérios neste cenário.")
+        print("\nNenhuma vulnerabilidade encontrada que corresponda aos critérios.")
     else:
         print("\nNão foi possível gerar o sumário devido a um erro na consulta.")
+    
+    print("\n" + "#"*80)
+
+def generate_pivoted_csv_output(df):
+    """
+    Agrupa, pivota os resultados para o formato "largo" e salva em CSV.
+    """
+    if df is None or df.empty:
+        print("\nNenhum dado para gerar o arquivo CSV.")
+        return
+
+    print("\nPreparando dados para a saída pivotada do Excel...")
+    try:
+        # Passo 1: Agrupar e contar para obter a base para a pivotagem
+        summary_df = df.groupby(['publication_year', 'Version', 'Priority']).size().reset_index(name='Total')
+
+        # Passo 2: Pivotar a tabela para o formato "largo"
+        pivoted_df = summary_df.pivot_table(
+            index=['publication_year', 'Priority'], # Linhas
+            columns='Version',                     # Colunas
+            values='Total',                        # Valores nas células
+            fill_value=0                           # Preenche células vazias com 0
+        ).reset_index()
+
+        # Renomeia as colunas para o formato final
+        pivoted_df.rename(columns={
+            'publication_year': 'Ano',
+            'Priority': 'Criticidade'
+        }, inplace=True)
         
-    print("\n" + "="*80)
+        # Remove o nome do índice das colunas ('Version') para um cabeçalho mais limpo
+        pivoted_df.columns.name = None
+        
+        output_filename = 'pro_only_fixes_pivoted_summary.csv'
+        
+        # Salva o DataFrame pivotado em um arquivo CSV
+        pivoted_df.to_csv(output_filename, index=False, encoding='utf-8-sig')
+        
+        print(f"Arquivo '{output_filename}' gerado com sucesso! Você pode abri-lo no Excel.")
+
+    except Exception as e:
+        print(f"ERRO ao gerar o arquivo CSV pivotado: {e}")
 
 def main():
     """
-    Função principal que gerencia a conexão e orquestra as duas análises.
+    Função principal que gerencia a conexão e orquestra a análise.
     """
     try:
         connection_string = f'mysql+mysqlconnector://{db_user}:{db_password}@{db_host}/{db_name}'
@@ -90,13 +145,13 @@ def main():
         with engine.connect() as connection:
             print("Conexão via SQLAlchemy Engine estabelecida com sucesso.")
             
-            # --- Análise 1: Cenário Geral (tabela 'results') ---
-            df_summary_results = analyze_cves_for_summary(connection, 'results')
-            print_summary(df_summary_results, "Sumário - Geral (análise da tabela 'results')")
+            df_summary = analyze_pro_only_difference(connection)
             
-            # --- Análise 2: Cenário de Pacotes Comuns (tabela 'pacotescomum') ---
-            df_summary_common = analyze_cves_for_summary(connection, 'pacotescomum')
-            print_summary(df_summary_common, "Sumário - Pacotes Comuns (análise da tabela 'pacotescomum')")
+            # 1. Imprime o relatório detalhado no console (opcional)
+            print_detailed_summary(df_summary, "Sumário Anual por Versão - Vulnerabilidades Corrigidas Apenas no Ubuntu Pro")
+            
+            # 2. Gera o arquivo CSV formatado para o Excel
+            generate_pivoted_csv_output(df_summary)
 
     except SQLAlchemyError as err:
         print(f"ERRO CRÍTICO de conexão com o banco de dados: {err}")
