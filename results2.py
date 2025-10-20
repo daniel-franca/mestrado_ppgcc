@@ -233,7 +233,7 @@ for distro, cves in distro_cves.items():
                         a = distro
                         version = ["xenial", "bionic", "focal", "jammy"]
                         for b in version:
-                            sql = f"SELECT distinct (CVE), Resolved, Published_NIST, Status FROM {a} where Distro IN ('{b}') AND Status != 'not-affected AND CVE='{c}'"
+                            sql = f"SELECT distinct (CVE), Resolved, Published_NIST, Status FROM {a} where Distro IN ('{b}') AND Status != 'not-affected' AND CVE='{c}'"
                             main(a, b, sql)
                     else:
                         if distro == "almalinux":
