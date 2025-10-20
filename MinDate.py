@@ -7,7 +7,7 @@ mydb = mysql.connector.connect(
     charset="utf8",
     user='user',
     password='password',
-    database='cvedb',
+    database='cvedb5',
     host='127.0.0.1'
 )
 cursor = mydb.cursor()
@@ -37,7 +37,7 @@ for distro in cve_distro:
                 select_redhat = f"SELECT least(Published, Published_NIST) from cvedb5.redhat a WHERE (CVE = '{temp}')"
                 select_rocky = f"SELECT least(Published, Published_NIST) from cvedb5.rockylinux a WHERE (CVE = '{temp}')"
                 select_ubuntu = f"SELECT least(Published, Published_NIST) from cvedb5.ubuntu a WHERE (CVE = '{temp}')"
-                select_ubuntupro = f"SELECT least(Published, Published_NIST) from cvedb5.ubuntu_PRO a WHERE (CVE = '{temp}')"
+                select_ubuntupro = f"SELECT least(Published, Published_NIST) from cvedb5.ubuntupro a WHERE (CVE = '{temp}')"
                 # Put all dates in a list
                 listcve = [select_alma, select_debian, select_redhat, select_rocky, select_ubuntu, select_ubuntupro]
                 mindate = []
@@ -68,3 +68,4 @@ print("Finished")
 # Make sure connection is closed
 cursor.close()
 mydb.close()
+
