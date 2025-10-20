@@ -55,7 +55,7 @@ def connect_db():
         charset="utf8",
         user='user',
         password='change_password',
-        database='cvedb',
+        database='cvedb5',
         host='127.0.0.1',
         pool_name='mypool',
         pool_size=5
@@ -71,7 +71,7 @@ def fetch_all_data(cursor):
         'debian': "SELECT CVE, Resolved, Published_NIST, Status, Distro FROM debian",
         'redhat': "SELECT DISTINCT CVE, Resolved, Published_NIST, FixState, Version FROM redhat",
         'ubuntu': "SELECT DISTINCT CVE, Resolved, Published_NIST, Status, Distro FROM ubuntu",
-        'ubuntu_PRO': "SELECT DISTINCT CVE, Resolved, Published_NIST, Status, Distro FROM ubuntu_PRO",
+        'ubuntupro': "SELECT DISTINCT CVE, Resolved, Published_NIST, Status, Distro FROM ubuntupro",
         'almalinux': "SELECT DISTINCT CVE, Resolved, Published_NIST, Version FROM almalinux",
         'rockylinux': "SELECT DISTINCT CVE, Resolved, Published_NIST, Version FROM rockylinux"
     }
@@ -115,7 +115,7 @@ def process_distro_data(distro, version_data, mindate_dict, progress_bar=None):
 
         # Tratamento especial para distribuições sem status
         status = None
-        if distro in ['debian', 'ubuntu', 'ubuntu_PRO', 'redhat']:
+        if distro in ['debian', 'ubuntu', 'ubuntupro', 'redhat']:
             status = x[3] if len(x) > 3 else None
         
         try:
@@ -319,7 +319,7 @@ def main():
             "focal": [],
             "jammy": []
         },
-        'ubuntu_PRO': {
+        'ubuntupro': {
             "xenial": [],
             "bionic": [],
             "focal": [],
@@ -343,7 +343,7 @@ def main():
             version = None
 
             # Determinar a versão com base na estrutura do registro
-            if distro in ['debian', 'ubuntu', 'ubuntu_PRO']:
+            if distro in ['debian', 'ubuntu', 'ubuntupro']:
                 version = record[4]  # Campo 'Distro' para essas tabelas
             elif distro == 'redhat':
                 version_str = record[4] if len(record) > 4 else ""
