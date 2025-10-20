@@ -2,15 +2,15 @@ Linha de comando / command line:
 
 
 mysql> 
-CREATE DATABASE cvedb DEFAULT CHARACTER SET utf8;
+CREATE DATABASE cvedb5 DEFAULT CHARACTER SET utf8;
 CREATE USER 'cvedb_user'@'%' IDENTIFIED WITH mysql_native_password BY 'change_password';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, DROP, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON cvedb.* TO 'cvedb_user'@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, DROP, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON cvedb5.* TO 'cvedb_user'@'%';
 FLUSH PRIVILEGES;
 SET @@global.sql_mode= '';
 
 
 DBeaver
-CREATE TABLE cvedb.nist (
+CREATE TABLE cvedb5.nist (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100),
 	Published varchar(100),
@@ -20,7 +20,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.redhat (
+CREATE TABLE cvedb5.redhat (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100) NOT NULL,
 	Version varchar(100) NOT NULL,
@@ -36,7 +36,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.almalinux (
+CREATE TABLE cvedb5.almalinux (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	idalma varchar(100) NOT NULL,
 	CVE varchar(100),
@@ -52,7 +52,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.rockylinux (
+CREATE TABLE cvedb5.rockylinux (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	idrocky varchar(100) NOT NULL,
 	CVE varchar(100),
@@ -68,7 +68,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.ubuntu (
+CREATE TABLE cvedb5.ubuntu (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100) NOT NULL,
 	Published varchar(100) NOT NULL,
@@ -85,7 +85,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.debian (
+CREATE TABLE cvedb5.debian (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100) NOT NULL,
 	Published_NIST varchar(100),
@@ -101,7 +101,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.cvemindate (
+CREATE TABLE cvedb5.cvemindate (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100) NOT NULL,
 	MinDate date NOT NULL
@@ -110,7 +110,7 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.ubuntupro (
+CREATE TABLE cvedb5.ubuntupro (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	CVE varchar(100) NOT NULL,
 	Published varchar(100) NOT NULL,
@@ -127,10 +127,11 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
-CREATE TABLE cvedb.packages (
+CREATE TABLE cvedb5.packages (
 	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	Package varchar(100) NOT NULL
 )
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
+
