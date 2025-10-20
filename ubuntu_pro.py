@@ -4,7 +4,7 @@ import csv
 import os
 
 # MySQL Connection
-mydb = mysql.connector.connect(charset="utf8", user='user', password='password', database='cvedb', host='127.0.0.1')
+mydb = mysql.connector.connect(charset="utf8", user='user', password='password', database='cvedb5', host='127.0.0.1')
 cursor = mydb.cursor()
 
 with os.scandir('/JSONS_FILE_DIR') as localfiles:
