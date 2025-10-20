@@ -8,7 +8,7 @@ from collections import defaultdict
 import sys
 
 # MySQL Connection
-mydb = mysql.connector.connect(charset="utf8", user='cvedb_user', password='change_password', database='cvedb', host='127.0.0.1')
+mydb = mysql.connector.connect(charset="utf8", user='cvedb_user', password='change_password', database='cvedb5', host='127.0.0.1')
 cursor = mydb.cursor()
 
 def parse_date(date_string, format_list):
@@ -103,7 +103,7 @@ def main(distro, version, sql):
             print(f"Error processing CVE {cve}: {str(e)}")
     mydb.commit()
 # Tables to check
-DEBTable = ["debian", "ubuntu", "ubuntu_PRO"]
+DEBTable = ["debian", "ubuntu", "ubuntupro"]
 RPMTable = ["redhat", "almalinux", "rockylinux"]
 distros = list(set(DEBTable).union(RPMTable))
 
@@ -140,7 +140,7 @@ mydb.commit()
 distro_cves = defaultdict(lambda: set())
 
 for distro in distros:
-    if distro == 'ubuntu_PRO':
+    if distro == 'ubuntupro':
         continue  # Ubuntu Pro is a special case, it only has part of the packages
     cursor.execute(f"SELECT DISTINCT(cve) from cvedb5.{distro}")
     distro_cves[distro].update(result[0] for result in cursor.fetchall())
@@ -192,14 +192,14 @@ for distro, cves in distro_cves.items():
     print(f'{distro}: CVEs catalogadas: {len(cves)}')
 
 print()
-print(f'CVEs cataloged in ubuntu_PRO but not in ubuntu: {len(distro_cves["ubuntu_PRO"] - distro_cves["ubuntu"])}')
-print(f'CVEs cataloged in ubuntu but not in ubuntu_PRO: {len(distro_cves["ubuntu"] - distro_cves["ubuntu_PRO"])}')
-print(f'CVEs cataloged in ubuntu AND ubuntu_PRO: {len(distro_cves["ubuntu"] & distro_cves["ubuntu_PRO"])}')
+print(f'CVEs cataloged in ubuntupro but not in ubuntu: {len(distro_cves["ubuntupro"] - distro_cves["ubuntu"])}')
+print(f'CVEs cataloged in ubuntu but not in ubuntupro: {len(distro_cves["ubuntu"] - distro_cves["ubuntupro"])}')
+print(f'CVEs cataloged in ubuntu AND ubuntupro: {len(distro_cves["ubuntu"] & distro_cves["ubuntupro"])}')
 print()
 
 comum_cves = distro_cves['debian']
 for distro, cves in distro_cves.items():
-    if distro == 'ubuntu_PRO':
+    if distro == 'ubuntupro':
         continue
     comum_cves &= cves
 
