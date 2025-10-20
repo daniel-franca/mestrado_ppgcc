@@ -55,7 +55,7 @@ queries = {
     },
     'ubuntupro': {
         'versions': ["xenial", "bionic", "focal", "jammy"],
-        'sql': "SELECT DISTINCT CVE, Resolved, Published_NIST FROM ubuntu_PRO WHERE Distro = %s"
+        'sql': "SELECT DISTINCT CVE, Resolved, Published_NIST FROM ubuntupro WHERE Distro = %s"
     },
     'almalinux': {
         'versions': ["8", "9"],
