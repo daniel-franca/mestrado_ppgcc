@@ -4,7 +4,7 @@
 import mysql.connector
 
 # MySQL Connection
-mydb = mysql.connector.connect(charset="utf8", user='cvedb_user', password='change_password', database='cvedb', host='127.0.0.1')
+mydb = mysql.connector.connect(charset="utf8", user='cvedb_user', password='change_password', database='cvedb5', host='127.0.0.1')
 cursor = mydb.cursor()
 
 # Get Unique CVEs by NIST and Linux distributions and sum
@@ -73,4 +73,5 @@ for a in range(len(distro)):
        print(f"Distribution {temp} has {total} {priority} NIST vulnerabilities")
    print("")
    print("")
+
    
