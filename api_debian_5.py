@@ -11,7 +11,7 @@ import pandas as pd
 import mysql.connector
 
 # MySQL Connection
-mydb = mysql.connector.connect(charset="utf8", user='cvedb_user', password='change_password', database='cvedb', host='127.0.0.1')
+mydb = mysql.connector.connect(charset="utf8", user='cvedb_user', password='change_password', database='cvedb5', host='127.0.0.1')
 cursor = mydb.cursor()
 
 # Get Debian´s CVEs and store the response of URL
@@ -110,3 +110,4 @@ for information in json_debian:
 response.close()
 
 print("Finished")
+
