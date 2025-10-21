@@ -135,3 +135,36 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=UTF8MB4_general_ci;
 
+
+CREATE TABLE cvedb5.pacotescomum (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100) NOT NULL,
+	Year int NOT NULL,
+	Distro varchar(100) NOT NULL,
+	Version varchar(100) NOT NULL,
+	NormPackage varchar(100) NOT NULL,
+	MinDate date NOT NULL,
+	Resolved date NOT NULL,
+	Days int NOT NULL
+	
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
+
+
+CREATE TABLE cvedb5.results (
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	CVE varchar(100) NOT NULL,
+	Year int NOT NULL,
+	Distro varchar(100) NOT NULL,
+	Version varchar(100) NOT NULL,
+	NormPackage varchar(100) NOT NULL,
+	MinDate date NOT NULL,
+	Resolved date NOT NULL,
+	Days int NOT NULL
+	
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=UTF8MB4_general_ci;
